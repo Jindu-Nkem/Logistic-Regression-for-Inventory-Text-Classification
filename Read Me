@@ -1,0 +1,3 @@
+Problem: An organization's inventory system is mixed up, containing both service items and inventory materials listed as "Inventory." This creates challenges due to the sheer volume of data - over 120,000 lines.
+Solution: This project utilizes logistic regression to classify the data into service items and materials. A training dataset of 25,000 entries, including both categories, was used to build the classifier.
+Result: This model yielded a 98% accuracy in prediction.
