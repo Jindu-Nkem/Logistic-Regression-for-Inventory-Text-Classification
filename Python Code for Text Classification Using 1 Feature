@@ -1,0 +1,76 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, accuracy_score
+
+# Load your data
+data = pd.read_excel('Inventory Data - Labelled.xlsx')
+
+# Split data into features (X) and target (y)
+X = data['Description']
+y = data['Category']
+
+# Encode categorical labels
+label_encoder = LabelEncoder()
+y_encoded = label_encoder.fit_transform(y)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.15, random_state=42)
+
+# Create TF-IDF vectorizer
+vectorizer = TfidfVectorizer(max_features=5000, stop_words='english')
+
+# Fit and transform training text data
+X_train_tfidf = vectorizer.fit_transform(X_train)
+
+# Transform test text data
+X_test_tfidf = vectorizer.transform(X_test)
+
+# Create Logistic Regression model
+model = LogisticRegression()
+
+# Train the model
+model.fit(X_train_tfidf, y_train)
+
+# Predict on test data
+y_pred = model.predict(X_test_tfidf)
+
+# Decode predicted labels
+y_pred_decoded = label_encoder.inverse_transform(y_pred)
+
+# Calculate accuracy and classification report
+accuracy = accuracy_score(y_test, y_pred)
+report = classification_report(y_test, y_pred, target_names=label_encoder.classes_)
+
+print(f"Accuracy: {accuracy:.2f}")
+print(report)
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LogisticRegression
+
+# Load your unlabelled data
+unlabelled_data = pd.read_excel('Inventory Data - Unlabelled.xlsx')
+
+# Extract features from unlabelled data
+X_unlabelled = unlabelled_data['Description']
+
+# Use the same vectorizer from before
+X_unlabelled_tfidf = vectorizer.transform(X_unlabelled)
+
+# Load the trained Logistic Regression model
+model = LogisticRegression()
+model.fit(X_train_tfidf, y_train)
+
+# Predict categories for unlabelled data
+predicted_categories = model.predict(X_unlabelled_tfidf)
+
+# Decode predicted labels to category names
+predicted_categories_decoded = label_encoder.inverse_transform(predicted_categories)
+
+# Populate the Category column in the unlabelled data
+unlabelled_data['Category'] = predicted_categories_decoded
+
+# Save the modified data to a new Excel file
+unlabelled_data.to_excel('Inventory_Data_Unlabelled_predicted3.xlsx', index=False)
